@@ -760,12 +760,10 @@
         <div class="task-actions">
           <span>${name}</span><small>${duration}m</small>
         </div>
-        <div class="task-actions">
-          <button class="btn small ghost" data-action="start-task">开始</button>
-          <button class="btn small" data-action="edit-task">编辑</button>
-        </div>
+        <div class="task-actions task-buttons"></div>
       `;
       attachDrag(row);
+      setTaskState(row, "active");
       return row;
     }
 
@@ -778,6 +776,7 @@
       doneListEl.appendChild(taskEl);
       checkDoneEmpty();
       updateStats();
+      saveTasks();
     }
 
     let dragItem = null;
@@ -814,6 +813,7 @@
           dragItem = null;
           checkDoneEmpty();
           updateStats();
+          saveTasks();
         }
       });
     }
@@ -823,6 +823,65 @@
       if (!hasTask && doneEmptyEl && !doneEmptyEl.parentElement) {
         doneListEl.appendChild(doneEmptyEl);
       }
+    }
+
+    function saveTasks() {
+      const data = [];
+      taskListEl.querySelectorAll(".task").forEach((el) => {
+        data.push({
+          name: el.getAttribute("data-name") || "",
+          duration: parseInt(el.getAttribute("data-duration") || "25", 10) || 25,
+          status: "active",
+        });
+      });
+      doneListEl.querySelectorAll(".task").forEach((el) => {
+        data.push({
+          name: el.getAttribute("data-name") || "",
+          duration: parseInt(el.getAttribute("data-duration") || "25", 10) || 25,
+          status: "done",
+        });
+      });
+      try {
+        localStorage.setItem("pomodoro_tasks", JSON.stringify(data));
+      } catch (e) {
+        console.warn("保存任务失败", e);
+      }
+    }
+
+    function loadTasks() {
+      let data = [];
+      try {
+        const raw = localStorage.getItem("pomodoro_tasks");
+        if (raw) data = JSON.parse(raw);
+      } catch (e) {
+        console.warn("读取任务失败，使用默认任务", e);
+      }
+
+      if (!Array.isArray(data) || data.length === 0) {
+        data = [
+          { name: "写日报", duration: 25, status: "active" },
+          { name: "读文档", duration: 25, status: "active" },
+          { name: "复盘", duration: 25, status: "active" },
+        ];
+      }
+
+      taskListEl.innerHTML = "";
+      doneListEl.innerHTML = "";
+
+      data.forEach((item) => {
+        const row = createTaskElement(item.name, item.duration);
+        if (item.status === "done") {
+          setTaskState(row, "done");
+          doneListEl.appendChild(row);
+        } else {
+          setTaskState(row, "active");
+          taskListEl.appendChild(row);
+        }
+      });
+
+      checkDoneEmpty();
+      updateStats();
+      saveTasks();
     }
 
     function updateStats() {
@@ -845,17 +904,18 @@
     }
 
     function setTaskState(taskEl, state) {
-      const actionBars = taskEl.querySelectorAll(".task-actions");
-      const buttonsBar = actionBars[actionBars.length - 1];
+      const buttonsBar = taskEl.querySelector(".task-buttons");
       if (!buttonsBar) return;
       if (state === "active") {
         buttonsBar.innerHTML = `
           <button class="btn small ghost" data-action="start-task">开始</button>
           <button class="btn small" data-action="edit-task">编辑</button>
+          <button class="btn small" data-action="delete-task">删除</button>
         `;
       } else {
         buttonsBar.innerHTML = `
           <button class="btn small ghost" data-action="copy-task">复制</button>
+          <button class="btn small" data-action="delete-task">删除</button>
         `;
       }
     }
@@ -922,8 +982,19 @@
         taskListEl.appendChild(copy);
         checkDoneEmpty();
         updateStats();
+        saveTasks();
+      }
+
+      if (action === "delete-task") {
+        taskEl.remove();
+        checkDoneEmpty();
+        updateStats();
+        saveTasks();
       }
     }
+
+    // 初始加载任务数据
+    loadTasks();
 
     taskListEl.addEventListener("click", (e) => handleTaskClick(taskListEl, e));
     doneListEl.addEventListener("click", (e) => handleTaskClick(doneListEl, e));
@@ -956,6 +1027,7 @@
       document.getElementById("taskDuration").value = "25";
       editingTaskEl = null;
       updateStats();
+      saveTasks();
     });
 
     // 结束按钮：停止当前番茄并清空队列
