@@ -587,6 +587,7 @@
     let phase = "focus"; // focus | break
     let currentTaskEl = null;
     let editingTaskEl = null;
+    let audioCtx = null;
 
     const startPauseBtn = document.getElementById("startPauseBtn");
     const timerEl = document.getElementById("timer");
@@ -620,6 +621,29 @@
         timerSubEl.textContent = "放松一下，准备下一段专注";
       }
       updateStats();
+    }
+
+    function initAudio() {
+      if (!audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) audioCtx = new Ctx();
+      }
+    }
+
+    function playBeep() {
+      if (!audioCtx) return;
+      const ctx = audioCtx;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.3, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.32);
     }
 
     function startTimer() {
@@ -668,6 +692,7 @@
     }
 
     startPauseBtn.addEventListener("click", () => {
+      initAudio();
       if (isRunning) {
         pauseTimer();
       } else {
@@ -860,6 +885,7 @@
       phase = "focus";
       currentSegmentSeconds = focusSeconds;
       remaining = currentSegmentSeconds;
+      playBeep();
       updateUI();
     }
 
