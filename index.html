@@ -547,7 +547,7 @@
       </div>
       <div class="field">
         <label for="taskDuration">预计时长（分钟）</label>
-        <input id="taskDuration" type="number" min="5" max="120" value="25" />
+        <input id="taskDuration" type="number" min="1" max="120" value="25" />
       </div>
       <div class="modal-actions">
         <button class="btn" id="cancelTask">取消</button>
@@ -935,7 +935,7 @@
     // 保存任务（新建/编辑）
     document.getElementById("saveTask").addEventListener("click", () => {
       const name = document.getElementById("taskName").value.trim() || "新任务";
-      const duration = Math.max(5, Math.min(120, parseInt(document.getElementById("taskDuration").value, 10) || 25));
+      const duration = Math.max(1, Math.min(120, parseInt(document.getElementById("taskDuration").value, 10) || 25));
 
       if (editingTaskEl) {
         editingTaskEl.setAttribute("data-name", name);
