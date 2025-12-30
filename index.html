@@ -89,9 +89,9 @@
 
     .content {
       display: grid;
-      grid-template-columns: 240px minmax(520px, 1fr) 300px;
-      gap: 24px;
-      padding: 28px;
+      grid-template-columns: 280px minmax(640px, 1fr) 360px;
+      gap: 28px;
+      padding: 32px 36px;
       flex: 1;
       align-items: start;
     }
@@ -101,7 +101,7 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       border: 1px solid rgba(31, 35, 41, 0.04);
-      padding: 18px;
+      padding: 20px;
       animation: floatIn 0.6s ease forwards;
       opacity: 0;
     }
@@ -389,6 +389,7 @@
     @media (max-width: 1100px) {
       .content {
         grid-template-columns: 1fr;
+        padding: 20px;
       }
 
       .left-panel,
@@ -431,6 +432,7 @@
 
       .card {
         width: 100%;
+        padding: 18px;
       }
 
       .controls {
