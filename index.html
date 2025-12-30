@@ -375,6 +375,104 @@
       padding: 0 20px 24px;
     }
 
+    /* 直播瀑布流 */
+    .live-section {
+      padding: 20px 36px 32px;
+    }
+
+    .live-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .live-title {
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    .live-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .live-grid {
+      column-count: 3;
+      column-gap: 16px;
+    }
+
+    .live-card {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(31, 35, 41, 0.04);
+      overflow: hidden;
+    }
+
+    .live-thumb {
+      background: linear-gradient(135deg, #eef3ff, #f2f8ff);
+      height: 140px;
+      position: relative;
+    }
+
+    .live-thumb::after {
+      content: "LIVE";
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 77, 79, 0.9);
+      color: #fff;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .live-body {
+      padding: 12px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .live-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .live-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    @media (max-width: 1100px) {
+      .live-section {
+        padding: 16px 20px 24px;
+      }
+      .live-grid {
+        column-count: 2;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .live-grid {
+        column-count: 1;
+      }
+      .live-section {
+        padding: 12px 16px 20px;
+      }
+    }
+
     @keyframes floatIn {
       from {
         transform: translateY(18px);
@@ -576,6 +674,49 @@
       </div>
     </div>
   </div>
+
+  <!-- 学习直播瀑布流 -->
+  <section class="live-section">
+    <div class="live-header">
+      <div class="live-title">学习直播区</div>
+      <div class="live-actions">
+        <button class="btn primary" id="startLiveBtn">开启学习直播</button>
+        <button class="btn ghost">刷新列表</button>
+      </div>
+    </div>
+    <div class="live-grid" id="liveGrid">
+      <div class="live-card">
+        <div class="live-thumb"></div>
+        <div class="live-body">
+          <div class="live-name">番茄星人</div>
+          <div class="live-meta">
+            <span>专注：写作 · 第 2 段</span>
+            <span> · 18 人</span>
+          </div>
+        </div>
+      </div>
+      <div class="live-card">
+        <div class="live-thumb" style="background: linear-gradient(135deg,#fdf2f8,#f2f7ff);"></div>
+        <div class="live-body">
+          <div class="live-name">设计中</div>
+          <div class="live-meta">
+            <span>专注：插画练习</span>
+            <span> · 9 人</span>
+          </div>
+        </div>
+      </div>
+      <div class="live-card">
+        <div class="live-thumb" style="background: linear-gradient(135deg,#eefaf5,#f4f9ff);"></div>
+        <div class="live-body">
+          <div class="live-name">备考小李</div>
+          <div class="live-meta">
+            <span>专注：刷题 · 第 1 段</span>
+            <span> · 22 人</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <script>
     let focusSeconds = 25 * 60;
