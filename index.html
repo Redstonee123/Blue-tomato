@@ -647,6 +647,7 @@
     }
 
     function startTimer() {
+      initAudio();
       if (timerId) return;
       timerId = setInterval(() => {
         if (remaining > 0) {
@@ -900,6 +901,7 @@
       const duration = parseInt(taskEl.getAttribute("data-duration") || "25", 10);
 
       if (action === "start-task") {
+        initAudio();
         pauseTimer();
         segmentQueue = buildSegments(duration, focusSeconds / 60);
         const first = segmentQueue.shift();
