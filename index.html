@@ -93,6 +93,7 @@
       gap: 24px;
       padding: 28px;
       flex: 1;
+      align-items: start;
     }
 
     .card {
@@ -413,14 +414,28 @@
         height: auto;
         gap: 10px;
         padding: 12px 16px;
+        align-items: center;
       }
 
       .content {
+        grid-template-columns: 1fr;
         padding: 16px;
+        gap: 16px;
+      }
+
+      .left-panel,
+      .right-panel,
+      .center-panel {
+        width: 100%;
+      }
+
+      .card {
+        width: 100%;
       }
 
       .controls {
         gap: 8px;
+        justify-content: center;
       }
 
       .btn {
