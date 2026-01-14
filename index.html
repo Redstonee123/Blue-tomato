@@ -1,0 +1,1614 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>番茄钟 - Feishu 风格原型</title>
+  <!-- update: add marker for git diff -->
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --text: #1f2329;
+      --muted: #646a73;
+      --line: #e5e6eb;
+      --primary: #1664ff;
+      --primary-soft: rgba(22, 100, 255, 0.12);
+      --success: #00b578;
+      --shadow: 0 10px 30px rgba(31, 35, 41, 0.08);
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "MiSans", "HarmonyOS Sans", "OPPO Sans", "PingFang SC", "Microsoft YaHei UI", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 600px at 10% 10%, #eef3ff 0, transparent 60%),
+        radial-gradient(900px 500px at 90% 0%, #fff2f2 0, transparent 55%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .app {
+      min-height: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    .brand-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #ffffff url("./blue-tomato.png") center/cover no-repeat;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .goal {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1664ff, #7aa7ff);
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 280px minmax(640px, 1fr) 360px;
+      grid-template-areas: "left center right";
+      gap: 28px;
+      padding: 32px 36px 4px;
+      flex: 0 0 auto;
+      align-items: start;
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(31, 35, 41, 0.04);
+      padding: 20px;
+      animation: floatIn 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    .card.delay-1 { animation-delay: 0.1s; }
+    .card.delay-2 { animation-delay: 0.18s; }
+    .card.delay-3 { animation-delay: 0.26s; }
+
+    .panel-title {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      grid-area: left;
+    }
+
+    .kv {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+
+    .kv strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .progress {
+      height: 10px;
+      background: #f0f1f3;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 38%;
+      background: linear-gradient(90deg, #1664ff, #6aa0ff);
+      border-radius: 999px;
+    }
+
+    .center-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      grid-area: center;
+    }
+
+    .timer-ring {
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: conic-gradient(var(--primary) calc(var(--progress) * 1%), #e9edf7 0%);
+      display: grid;
+      place-items: center;
+      position: relative;
+      transition: background 0.4s ease;
+    }
+
+    .timer-ring::after {
+      content: "";
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 1px #eef0f4;
+    }
+
+    .timer-core {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .timer-label {
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    .timer-value {
+      font-size: 56px;
+      font-weight: 700;
+      margin: 12px 0 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      border-color: rgba(22, 100, 255, 0.4);
+      box-shadow: 0 6px 16px rgba(22, 100, 255, 0.12);
+    }
+
+    .btn.disabled,
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+      box-shadow: none;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 10px 22px rgba(22, 100, 255, 0.25);
+    }
+
+    .btn.ghost {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-color: transparent;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      grid-area: right;
+    }
+
+    .task {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f7f8fa;
+      font-size: 14px;
+      gap: 8px;
+      border: 1px dashed transparent;
+    }
+
+    .task span {
+      color: var(--text);
+    }
+
+    .task small {
+      color: var(--muted);
+    }
+
+    .tag {
+      font-size: 12px;
+      padding: 4px 10px;
+      background: #eef3ff;
+      color: #3c7dff;
+      border-radius: 999px;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn.small {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 10px;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .stats-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #f7f8fa;
+    }
+
+    .dropping {
+      border-color: #cdd5ff;
+      background: rgba(22, 100, 255, 0.04);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      padding: 16px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(420px, 100%);
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(31, 35, 41, 0.08);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 14px;
+    }
+
+    .field label {
+      color: var(--muted);
+    }
+
+    .field input {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field input:focus {
+      border-color: rgba(22, 100, 255, 0.45);
+      box-shadow: 0 0 0 3px rgba(22, 100, 255, 0.12);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+
+    .footer-note {
+      margin-top: auto;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      padding: 0 20px 24px;
+    }
+
+    /* 直播瀑布流 */
+    .live-section {
+      padding: 4px 36px 28px;
+      max-width: 1280px;
+      margin: 0 auto;
+      grid-column: 1 / -1;
+    }
+
+    .live-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .live-title {
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    .live-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .live-grid {
+      column-count: 3;
+      column-gap: 16px;
+    }
+
+    .live-card {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(31, 35, 41, 0.04);
+      overflow: hidden;
+    }
+
+    .live-thumb {
+      background: linear-gradient(135deg, #eef3ff, #f2f8ff);
+      height: 140px;
+      position: relative;
+    }
+
+    .live-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #0f1114;
+      display: block;
+    }
+
+    .live-thumb::after {
+      content: "LIVE";
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 77, 79, 0.9);
+      color: #fff;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .live-body {
+      padding: 12px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .live-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .live-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .live-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 30;
+    }
+
+    .live-modal.active {
+      display: flex;
+    }
+
+    .live-modal-card {
+      width: min(560px, 100%);
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .live-preview {
+      width: 100%;
+      height: 260px;
+      border-radius: 12px;
+      background: #edf1f7;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .live-preview video,
+    .live-preview canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @media (max-width: 1100px) {
+      .live-section {
+        padding: 16px 20px 24px;
+      }
+      .live-grid {
+        column-count: 2;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .live-grid {
+        column-count: 1;
+      }
+      .live-section {
+        padding: 12px 16px 20px;
+      }
+    }
+
+    @keyframes floatIn {
+      from {
+        transform: translateY(18px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 1199px) and (min-width: 901px) {
+      .content {
+        grid-template-columns: 260px 1fr;
+        grid-template-areas:
+          "left center"
+          "right right";
+        gap: 20px;
+        padding: 24px;
+      }
+      .live-section {
+        padding: 16px 24px 24px;
+      }
+      .timer-ring {
+        width: 300px;
+        height: 300px;
+      }
+      .timer-ring::after {
+        width: 230px;
+        height: 230px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .content {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "left"
+          "center"
+          "right";
+        padding: 18px;
+        gap: 16px;
+      }
+      .card {
+        padding: 16px;
+      }
+      .timer-ring {
+        width: 220px;
+        height: 220px;
+      }
+      .timer-ring::after {
+        width: 180px;
+        height: 180px;
+      }
+      .controls {
+        gap: 8px;
+        justify-content: center;
+      }
+      .live-section {
+        padding: 12px 16px 18px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .topbar {
+        flex-direction: column;
+        height: auto;
+        gap: 10px;
+        padding: 12px 16px;
+        align-items: center;
+      }
+      .btn {
+        padding: 8px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge"></div>
+        <div>蓝番茄</div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="left-panel">
+        <div class="card delay-1">
+          <div class="panel-title">任务进度</div>
+          <div class="kv"><span>当前任务</span><strong id="currentTaskNumber">0</strong></div>
+          <div class="kv"><span>已完成</span><strong id="completedCount">0</strong></div>
+          <div class="kv"><span>总任务</span><strong id="totalCount">0</strong></div>
+          <div class="panel-title" style="margin-top: 12px;">今日进度</div>
+          <div class="progress"><span id="progressFill" style="width: 0%;"></span></div>
+        </div>
+
+        <div class="card delay-2">
+          <div class="panel-title">任务节奏</div>
+          <div class="kv"><span>专注时长</span><strong>25 分钟</strong></div>
+          <div class="kv"><span>长休间隔</span><strong>每 4 次</strong></div>
+          <button class="btn ghost" id="adjustBtn" style="width: 100%; margin-top: 8px;">调整节奏</button>
+        </div>
+      </section>
+
+      <section class="center-panel">
+        <div class="card delay-2" style="width: 100%; display: grid; place-items: center;">
+          <div class="timer-ring" id="ring" style="--progress: 0.0;">
+            <div class="timer-core">
+              <div class="timer-label">专注中</div>
+              <div class="timer-value" id="timer">25:00</div>
+              <div class="timer-sub">计划任务：写日报</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="btn primary" id="startPauseBtn">开始</button>
+          <button class="btn" id="endBtn">结束</button>
+          <button class="btn" id="resetBtn">重置</button>
+          <button class="btn" id="skipBtn">跳过</button>
+        </div>
+        <div class="hint">提示：保持专注，结束后自动进入短休。</div>
+      </section>
+
+      <section class="right-panel">
+        <div class="card delay-1">
+          <div class="panel-title">任务列表</div>
+          <div id="taskList" class="list">
+            <div class="task" draggable="true" data-duration="25" data-name="写日报">
+              <div class="task-actions">
+                <span>写日报</span><small>25m</small>
+              </div>
+              <div class="task-actions">
+                <button class="btn small ghost" data-action="start-task">开始</button>
+                <button class="btn small" data-action="edit-task">编辑</button>
+              </div>
+            </div>
+            <div class="task" draggable="true" data-duration="25" data-name="读文档">
+              <div class="task-actions">
+                <span>读文档</span><small>25m</small>
+              </div>
+              <div class="task-actions">
+                <button class="btn small ghost" data-action="start-task">开始</button>
+                <button class="btn small" data-action="edit-task">编辑</button>
+              </div>
+            </div>
+            <div class="task" draggable="true" data-duration="25" data-name="复盘">
+              <div class="task-actions">
+                <span>复盘</span><small>25m</small>
+              </div>
+              <div class="task-actions">
+                <button class="btn small ghost" data-action="start-task">开始</button>
+                <button class="btn small" data-action="edit-task">编辑</button>
+              </div>
+            </div>
+      </div>
+      <button class="btn" id="newTaskBtn" style="width: 100%; margin-top: 10px;">+ 新任务</button>
+    </div>
+        <div class="card delay-3">
+          <div class="panel-title">已完成任务</div>
+          <div id="doneList" class="list">
+            <div style="font-size: 13px; color: var(--muted);" id="doneEmpty">暂无已完成任务</div>
+          </div>
+        </div>
+        <div class="card delay-3">
+          <div class="panel-title">每日番茄时长</div>
+          <div id="dailyStats" class="stats-list"></div>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- 新任务弹窗 -->
+  <div class="modal" id="taskModal">
+    <div class="modal-card">
+      <div class="panel-title" style="margin-bottom: 4px;">新任务</div>
+      <div class="field">
+        <label for="taskName">任务名称</label>
+        <input id="taskName" placeholder="例如：写日报" />
+      </div>
+      <div class="field">
+        <label for="taskDuration">预计时长（分钟）</label>
+        <input id="taskDuration" type="number" min="1" max="120" value="25" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelTask">取消</button>
+        <button class="btn primary" id="saveTask">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 调整节奏弹窗 -->
+  <div class="modal" id="rhythmModal">
+    <div class="modal-card">
+      <div class="panel-title" style="margin-bottom: 4px;">调整节奏</div>
+      <div class="field">
+        <label for="focusLength">专注时长（分钟）</label>
+        <input id="focusLength" type="number" min="10" max="60" value="25" />
+      </div>
+      <div class="field">
+        <label for="shortBreak">短休时长（分钟）</label>
+        <input id="shortBreak" type="number" min="3" max="20" value="5" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelRhythm">取消</button>
+        <button class="btn primary" id="saveRhythm">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 学习直播瀑布流 -->
+  <section class="live-section">
+    <div class="live-header">
+      <div class="live-title">学习直播区</div>
+      <div class="live-actions">
+        <button class="btn primary" id="startLiveBtn">开启学习直播</button>
+        <button class="btn" id="stopLiveBtn" style="display: none;">结束直播</button>
+        <button class="btn ghost" id="refreshLiveBtn">刷新列表</button>
+      </div>
+    </div>
+    <div class="live-grid" id="liveGrid">
+      <div class="live-card">
+        <div class="live-thumb"></div>
+        <div class="live-body">
+          <div class="live-name">番茄星人</div>
+          <div class="live-meta">
+            <span>专注：写作 · 第 2 段</span>
+            <span> · 18 人</span>
+          </div>
+        </div>
+      </div>
+      <div class="live-card">
+        <div class="live-thumb" style="background: linear-gradient(135deg,#fdf2f8,#f2f7ff);"></div>
+        <div class="live-body">
+          <div class="live-name">设计中</div>
+          <div class="live-meta">
+            <span>专注：插画练习</span>
+            <span> · 9 人</span>
+          </div>
+        </div>
+      </div>
+      <div class="live-card">
+        <div class="live-thumb" style="background: linear-gradient(135deg,#eefaf5,#f4f9ff);"></div>
+        <div class="live-body">
+          <div class="live-name">备考小李</div>
+          <div class="live-meta">
+            <span>专注：刷题 · 第 1 段</span>
+            <span> · 22 人</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="live-modal" id="liveModal">
+    <div class="live-modal-card">
+      <div class="panel-title">开始学习直播</div>
+      <div class="live-preview" id="livePreview">
+        <span style="color: var(--muted); font-size: 13px;">等待预览画面</span>
+      </div>
+      <div class="field">
+        <label for="liveTitle">直播标题</label>
+        <input id="liveTitle" placeholder="例如：专注写作第 2 段" />
+      </div>
+      <div class="field">
+        <label for="liveStreamName">直播标识（StreamName）</label>
+        <input id="liveStreamName" placeholder="例如：redstone" />
+      </div>
+      <div class="field">
+        <label>采集来源</label>
+        <div class="controls" style="justify-content: flex-start;">
+          <button class="btn" id="pickScreen">共享屏幕</button>
+          <button class="btn" id="pickCamera">开启摄像头</button>
+        </div>
+      </div>
+      <div class="field" style="flex-direction: row; align-items: center; gap: 10px;">
+        <input type="checkbox" id="blurToggle" />
+        <label for="blurToggle" style="color: var(--text);">开启模糊保护</label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelLive">取消</button>
+        <button class="btn primary" id="confirmLive">开始直播</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="live-modal" id="watchModal">
+    <div class="live-modal-card">
+      <div class="panel-title">直播观看</div>
+      <div class="live-preview">
+        <video id="watchVideo" controls playsinline></video>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="closeWatch">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let focusSeconds = 25 * 60;
+    let breakSeconds = 5 * 60;
+    let currentSegmentSeconds = focusSeconds;
+    let remaining = currentSegmentSeconds;
+    let timerId = null;
+    let isRunning = false;
+    let segmentQueue = [];
+    let currentTaskName = "";
+    let phase = "focus"; // focus | break
+    let currentTaskEl = null;
+    let editingTaskEl = null;
+    let audioCtx = null;
+    let focusedSecondsTotal = 0;
+    const API_BASE = "http://localhost:3001";
+    let liveStream = null;
+    let liveRecorder = null;
+    let liveWs = null;
+    let liveStreamName = null;
+    const livePreviewPlayers = new Map();
+
+    const startPauseBtn = document.getElementById("startPauseBtn");
+    const timerEl = document.getElementById("timer");
+    const ringEl = document.getElementById("ring");
+    const taskListEl = document.getElementById("taskList");
+    const doneListEl = document.getElementById("doneList");
+    const timerSubEl = document.querySelector(".timer-sub");
+    const timerLabelEl = document.querySelector(".timer-label");
+    const doneEmptyEl = document.getElementById("doneEmpty");
+    const dailyStatsEl = document.getElementById("dailyStats");
+    let dailyStats = {};
+    const liveModal = document.getElementById("liveModal");
+    const watchModal = document.getElementById("watchModal");
+    const livePreview = document.getElementById("livePreview");
+    const watchVideo = document.getElementById("watchVideo");
+    const startLiveBtn = document.getElementById("startLiveBtn");
+    const stopLiveBtn = document.getElementById("stopLiveBtn");
+    const refreshLiveBtn = document.getElementById("refreshLiveBtn");
+    const totalCountEl = document.getElementById("totalCount");
+    const completedCountEl = document.getElementById("completedCount");
+    const currentTaskNumberEl = document.getElementById("currentTaskNumber");
+    const progressFillEl = document.getElementById("progressFill");
+
+    function formatTime(value) {
+      const mins = Math.floor(value / 60);
+      const secs = value % 60;
+      return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function updateUI() {
+      timerEl.textContent = formatTime(remaining);
+      const total = phase === "focus" ? currentSegmentSeconds : breakSeconds;
+      const progress = total > 0 ? 100 - (remaining / total) * 100 : 0;
+      ringEl.style.setProperty("--progress", progress.toFixed(2));
+      startPauseBtn.textContent = isRunning ? "暂停" : "开始";
+      timerLabelEl.textContent = phase === "focus" ? "专注中" : "休息中";
+      if (phase === "focus") {
+        timerSubEl.textContent = currentTaskName ? `计划任务：${currentTaskName}` : "计划任务：—";
+      } else {
+        timerSubEl.textContent = "放松一下，准备下一段专注";
+      }
+      updateStats();
+    }
+
+    function initAudio() {
+      if (!audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) audioCtx = new Ctx();
+      }
+    }
+
+    function openLiveModal() {
+      liveModal.classList.add("active");
+    }
+
+    function closeLiveModal() {
+      liveModal.classList.remove("active");
+    }
+
+    function openWatchModal() {
+      watchModal.classList.add("active");
+    }
+
+    function closeWatchModal() {
+      watchModal.classList.remove("active");
+      if (watchVideo) {
+        watchVideo.pause();
+        watchVideo.removeAttribute("src");
+      }
+    }
+
+    function clearPreview() {
+      livePreview.innerHTML = "<span style=\"color: var(--muted); font-size: 13px;\">等待预览画面</span>";
+    }
+
+    async function requestStream(kind) {
+      if (liveStream) {
+        liveStream.getTracks().forEach((t) => t.stop());
+      }
+      if (kind === "screen") {
+        liveStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      } else {
+        liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      }
+      renderPreview(liveStream);
+    }
+
+    function renderPreview(stream) {
+      livePreview.innerHTML = "";
+      const video = document.createElement("video");
+      video.autoplay = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.srcObject = stream;
+      livePreview.appendChild(video);
+    }
+
+    function renderBlurStream(stream) {
+      const video = document.createElement("video");
+      video.autoplay = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.srcObject = stream;
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const draw = () => {
+        if (video.videoWidth > 0) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.filter = "blur(8px)";
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        }
+        requestAnimationFrame(draw);
+      };
+      draw();
+      livePreview.innerHTML = "";
+      livePreview.appendChild(canvas);
+      return canvas.captureStream(25);
+    }
+
+    function normalizeStreamName(name) {
+      const cleaned = (name || "").trim().replace(/[^a-zA-Z0-9_-]/g, "");
+      return cleaned || "redstone";
+    }
+
+    async function startLive() {
+      if (!liveStream) {
+        alert("请先选择共享屏幕或摄像头");
+        return;
+      }
+      const useBlur = document.getElementById("blurToggle").checked;
+      const title = document.getElementById("liveTitle").value.trim() || "学习中";
+      const inputName = document.getElementById("liveStreamName").value;
+      liveStreamName = normalizeStreamName(inputName);
+
+      await fetch(`${API_BASE}/api/live/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ streamName: liveStreamName, title, user: "蓝番茄用户" }),
+      });
+
+      const wsUrl = `${API_BASE.replace("http", "ws")}/api/live/ingest?streamName=${liveStreamName}`;
+      liveWs = new WebSocket(wsUrl);
+
+      const streamToSend = useBlur ? renderBlurStream(liveStream) : liveStream;
+      const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus")
+        ? "video/webm;codecs=vp8,opus"
+        : "video/webm";
+      liveRecorder = new MediaRecorder(streamToSend, { mimeType });
+      liveRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0 && liveWs && liveWs.readyState === 1) {
+          liveWs.send(e.data);
+        }
+      };
+      liveRecorder.start(1000);
+
+      closeLiveModal();
+      startLiveBtn.style.display = "none";
+      stopLiveBtn.style.display = "inline-flex";
+      refreshLiveList();
+    }
+
+    async function stopLive() {
+      if (liveRecorder) liveRecorder.stop();
+      if (liveWs) liveWs.close();
+      if (liveStream) liveStream.getTracks().forEach((t) => t.stop());
+      liveRecorder = null;
+      liveWs = null;
+      liveStream = null;
+
+      if (liveStreamName) {
+        await fetch(`${API_BASE}/api/live/stop`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ streamName: liveStreamName }),
+        });
+      }
+      liveStreamName = null;
+      startLiveBtn.style.display = "inline-flex";
+      stopLiveBtn.style.display = "none";
+      clearPreview();
+      refreshLiveList();
+    }
+
+    async function refreshLiveList() {
+      const grid = document.getElementById("liveGrid");
+      if (!grid) return;
+      livePreviewPlayers.forEach((player) => {
+        if (player && typeof player.destroy === "function") player.destroy();
+      });
+      livePreviewPlayers.clear();
+      const res = await fetch(`${API_BASE}/api/live/list`);
+      const list = await res.json();
+      grid.innerHTML = "";
+      list.forEach((room) => {
+        const card = document.createElement("div");
+        card.className = "live-card";
+        card.innerHTML = `
+          <div class="live-thumb">
+            <video muted playsinline></video>
+          </div>
+          <div class="live-body">
+            <div class="live-name">${room.user || "用户"}</div>
+            <div class="live-meta"><span>${room.title || "学习中"}</span></div>
+          </div>
+        `;
+        const video = card.querySelector("video");
+        if (video) attachLivePreview(video, room.streamName);
+        grid.appendChild(card);
+      });
+    }
+
+    async function attachLivePreview(video, streamName) {
+      const res = await fetch(`${API_BASE}/api/live/urls?streamName=${streamName}`);
+      const urls = await res.json();
+      const hlsUrlRaw = urls.playHls;
+      const hlsUrl = `${hlsUrlRaw}${hlsUrlRaw.includes("?") ? "&" : "?"}t=${Date.now()}`;
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = hlsUrl;
+      } else if (window.Hls) {
+        const hls = new Hls({
+          lowLatencyMode: true,
+          backBufferLength: 30,
+        });
+        hls.on(Hls.Events.ERROR, (_evt, data) => {
+          console.warn("HLS error", data);
+        });
+        hls.loadSource(hlsUrl);
+        hls.attachMedia(video);
+        livePreviewPlayers.set(streamName, hls);
+      } else {
+        video.src = hlsUrl;
+      }
+      video.play().catch(() => null);
+    }
+
+    function playBeep() {
+      if (!audioCtx) return;
+      const ctx = audioCtx;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.3, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.32);
+    }
+
+    function startTimer() {
+      initAudio();
+      if (timerId) return;
+      timerId = setInterval(() => {
+        if (remaining > 0) {
+          remaining -= 1;
+          if (phase === "focus") {
+            focusedSecondsTotal += 1;
+          }
+          updateUI();
+        } else {
+          if (phase === "focus") {
+            if (segmentQueue.length > 0) {
+              startBreak();
+            } else {
+              endFlow();
+            }
+          } else {
+            if (segmentQueue.length > 0) {
+              startNextSegment();
+            } else {
+              endFlow();
+            }
+          }
+        }
+      }, 1000);
+      isRunning = true;
+      startPauseBtn.textContent = "暂停";
+    }
+
+    function pauseTimer() {
+      if (!timerId) return;
+      clearInterval(timerId);
+      timerId = null;
+      isRunning = false;
+      startPauseBtn.textContent = "开始";
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      segmentQueue = [];
+      currentTaskName = "";
+      currentTaskEl = null;
+      focusedSecondsTotal = 0;
+      phase = "focus";
+      currentSegmentSeconds = focusSeconds;
+      remaining = focusSeconds;
+      updateUI();
+    }
+
+    startPauseBtn.addEventListener("click", () => {
+      initAudio();
+      if (isRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", resetTimer);
+
+    // 弹窗公用函数
+    function openModal(modal) {
+      modal.classList.add("active");
+    }
+
+    function closeModal(modal) {
+      modal.classList.remove("active");
+    }
+
+    // 新任务 / 编辑
+    const taskModal = document.getElementById("taskModal");
+    document.getElementById("newTaskBtn").addEventListener("click", () => {
+      editingTaskEl = null;
+      document.getElementById("taskName").value = "";
+      document.getElementById("taskDuration").value = "25";
+      openModal(taskModal);
+    });
+    document.getElementById("cancelTask").addEventListener("click", () => {
+      closeModal(taskModal);
+      editingTaskEl = null;
+    });
+
+    // 调整节奏
+    const rhythmModal = document.getElementById("rhythmModal");
+    document.getElementById("adjustBtn").addEventListener("click", () => openModal(rhythmModal));
+    document.getElementById("cancelRhythm").addEventListener("click", () => closeModal(rhythmModal));
+    document.getElementById("saveRhythm").addEventListener("click", () => {
+      const focusMin = Math.max(10, Math.min(60, parseInt(document.getElementById("focusLength").value, 10) || 25));
+      const breakMin = Math.max(3, Math.min(20, parseInt(document.getElementById("shortBreak").value, 10) || 5));
+      focusSeconds = focusMin * 60;
+      breakSeconds = breakMin * 60;
+      currentSegmentSeconds = focusSeconds;
+      resetTimer();
+      closeModal(rhythmModal);
+    });
+
+    function buildSegments(totalMinutes, focusMinutes) {
+      const segs = [];
+      let remainingMinutes = totalMinutes;
+      while (remainingMinutes > 0) {
+        const chunk = Math.min(focusMinutes, remainingMinutes);
+        segs.push(chunk);
+        remainingMinutes -= chunk;
+      }
+      return segs;
+    }
+
+    function createTaskElement(name, duration) {
+      const row = document.createElement("div");
+      row.className = "task";
+      row.setAttribute("draggable", "true");
+      row.setAttribute("data-duration", duration.toString());
+      row.setAttribute("data-name", name);
+      row.innerHTML = `
+        <div class="task-actions">
+          <span>${name}</span><small>${duration}m</small>
+        </div>
+        <div class="task-actions task-buttons"></div>
+      `;
+      attachDrag(row);
+      setTaskState(row, "active");
+      return row;
+    }
+
+    function moveToDone(taskEl) {
+      if (!taskEl) return;
+      if (doneEmptyEl && doneEmptyEl.parentElement) {
+        doneEmptyEl.remove();
+      }
+      addDailyStatsFromSeconds(focusedSecondsTotal);
+      setTaskState(taskEl, "done");
+      doneListEl.appendChild(taskEl);
+      checkDoneEmpty();
+      updateStats();
+      saveTasks();
+      focusedSecondsTotal = 0;
+    }
+
+    let dragItem = null;
+
+    function attachDrag(el) {
+      el.addEventListener("dragstart", (ev) => {
+        dragItem = el;
+        el.classList.add("dropping");
+        if (ev.dataTransfer) {
+          ev.dataTransfer.setData("text/plain", "drag");
+          ev.dataTransfer.effectAllowed = "move";
+        }
+      });
+      el.addEventListener("dragend", () => {
+        el.classList.remove("dropping");
+      });
+    }
+
+    function setupDropZone(zone) {
+      zone.addEventListener("dragover", (ev) => {
+        ev.preventDefault();
+        zone.classList.add("dropping");
+      });
+      zone.addEventListener("dragleave", () => {
+        zone.classList.remove("dropping");
+      });
+      zone.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+        zone.classList.remove("dropping");
+        if (dragItem) {
+          zone.appendChild(dragItem);
+          const toActive = zone === taskListEl;
+          setTaskState(dragItem, toActive ? "active" : "done");
+          dragItem = null;
+          checkDoneEmpty();
+          updateStats();
+          saveTasks();
+        }
+      });
+    }
+
+    function checkDoneEmpty() {
+      const hasTask = !!doneListEl.querySelector(".task");
+      if (!hasTask && doneEmptyEl && !doneEmptyEl.parentElement) {
+        doneListEl.appendChild(doneEmptyEl);
+      }
+    }
+
+    function saveTasks() {
+      const data = [];
+      taskListEl.querySelectorAll(".task").forEach((el) => {
+        data.push({
+          name: el.getAttribute("data-name") || "",
+          duration: parseInt(el.getAttribute("data-duration") || "25", 10) || 25,
+          status: "active",
+        });
+      });
+      doneListEl.querySelectorAll(".task").forEach((el) => {
+        data.push({
+          name: el.getAttribute("data-name") || "",
+          duration: parseInt(el.getAttribute("data-duration") || "25", 10) || 25,
+          status: "done",
+        });
+      });
+      try {
+        localStorage.setItem("pomodoro_tasks", JSON.stringify(data));
+      } catch (e) {
+        console.warn("保存任务失败", e);
+      }
+    }
+
+    function loadDailyStats() {
+      try {
+        const raw = localStorage.getItem("pomodoro_daily_stats");
+        dailyStats = raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        dailyStats = {};
+        console.warn("读取每日统计失败", e);
+      }
+      renderDailyStats();
+    }
+
+    function saveDailyStats() {
+      try {
+        localStorage.setItem("pomodoro_daily_stats", JSON.stringify(dailyStats));
+      } catch (e) {
+        console.warn("保存每日统计失败", e);
+      }
+    }
+
+    function addDailyStatsFromSeconds(seconds) {
+      if (!seconds || seconds <= 0) return;
+      let minutes = Math.round((seconds / 60) * 10) / 10;
+      if (minutes <= 0) minutes = 0.1;
+      const key = new Date().toISOString().slice(0, 10);
+      dailyStats[key] = Math.round(((dailyStats[key] || 0) + minutes) * 10) / 10;
+      saveDailyStats();
+      renderDailyStats();
+    }
+
+    function renderDailyStats() {
+      if (!dailyStatsEl) return;
+      const entries = Object.entries(dailyStats)
+        .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+        .slice(0, 7);
+
+      if (entries.length === 0) {
+        dailyStatsEl.innerHTML = "<div style=\"color: var(--muted); font-size: 13px;\">暂无记录</div>";
+        return;
+      }
+
+      dailyStatsEl.innerHTML = entries
+        .map(([date, minutes]) => {
+          const text = Number.isInteger(minutes) ? minutes.toString() : minutes.toFixed(1);
+          return `<div class="stats-item"><span>${date}</span><span>${text} 分钟</span></div>`;
+        })
+        .join("");
+    }
+
+    function loadTasks() {
+      let data = [];
+      try {
+        const raw = localStorage.getItem("pomodoro_tasks");
+        if (raw) data = JSON.parse(raw);
+      } catch (e) {
+        console.warn("读取任务失败，使用默认任务", e);
+      }
+
+      if (!Array.isArray(data) || data.length === 0) {
+        data = [
+          { name: "写日报", duration: 25, status: "active" },
+          { name: "读文档", duration: 25, status: "active" },
+          { name: "复盘", duration: 25, status: "active" },
+        ];
+      }
+
+      taskListEl.innerHTML = "";
+      doneListEl.innerHTML = "";
+
+      data.forEach((item) => {
+        const row = createTaskElement(item.name, item.duration);
+        if (item.status === "done") {
+          setTaskState(row, "done");
+          doneListEl.appendChild(row);
+        } else {
+          setTaskState(row, "active");
+          taskListEl.appendChild(row);
+        }
+      });
+
+      checkDoneEmpty();
+      updateStats();
+      saveTasks();
+    }
+
+    function updateStats() {
+      const totalTasks = document.querySelectorAll(".task").length;
+      const doneTasks = doneListEl.querySelectorAll(".task").length;
+      const currentNumber = totalTasks === 0 ? 0 : Math.min(totalTasks, doneTasks + 1);
+      totalCountEl.textContent = totalTasks.toString();
+      completedCountEl.textContent = doneTasks.toString();
+      currentTaskNumberEl.textContent = currentNumber.toString();
+      const ratio = totalTasks > 0 ? (doneTasks / totalTasks) * 100 : 0;
+      progressFillEl.style.width = `${ratio.toFixed(0)}%`;
+    }
+
+    function setFocusSegment(minutes, taskName) {
+      currentSegmentSeconds = minutes * 60;
+      remaining = currentSegmentSeconds;
+      phase = "focus";
+      if (taskName !== undefined) currentTaskName = taskName;
+      updateUI();
+    }
+
+    function setTaskState(taskEl, state) {
+      const buttonsBar = taskEl.querySelector(".task-buttons");
+      if (!buttonsBar) return;
+      if (state === "active") {
+        buttonsBar.innerHTML = `
+          <button class="btn small ghost" data-action="start-task">开始</button>
+          <button class="btn small" data-action="edit-task">编辑</button>
+          <button class="btn small" data-action="delete-task">删除</button>
+        `;
+      } else {
+        buttonsBar.innerHTML = `
+          <button class="btn small ghost" data-action="copy-task">复制</button>
+          <button class="btn small" data-action="delete-task">删除</button>
+        `;
+      }
+    }
+
+    function startBreak() {
+      phase = "break";
+      remaining = breakSeconds;
+      updateUI();
+    }
+
+    function startNextSegment() {
+      const next = segmentQueue.shift();
+      if (typeof next === "number") {
+        setFocusSegment(next, currentTaskName);
+      } else {
+        endFlow();
+      }
+    }
+
+    function endFlow() {
+      pauseTimer();
+      segmentQueue = [];
+      currentTaskName = "";
+      if (currentTaskEl) {
+        moveToDone(currentTaskEl);
+      }
+      currentTaskEl = null;
+      phase = "focus";
+      currentSegmentSeconds = focusSeconds;
+      remaining = currentSegmentSeconds;
+      playBeep();
+      updateUI();
+    }
+
+    function handleTaskClick(container, e) {
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
+      const action = target.dataset.action;
+      if (!action) return;
+      const taskEl = target.closest(".task");
+      if (!taskEl) return;
+      const name = taskEl.getAttribute("data-name") || "";
+      const duration = parseInt(taskEl.getAttribute("data-duration") || "25", 10);
+
+      if (action === "start-task") {
+        initAudio();
+        pauseTimer();
+        focusedSecondsTotal = 0;
+        segmentQueue = buildSegments(duration, focusSeconds / 60);
+        const first = segmentQueue.shift();
+        setFocusSegment(first || focusSeconds / 60, name);
+        currentTaskEl = taskEl;
+        startTimer();
+      }
+
+      if (action === "edit-task") {
+        editingTaskEl = taskEl;
+        document.getElementById("taskName").value = name;
+        document.getElementById("taskDuration").value = duration.toString();
+        openModal(taskModal);
+      }
+
+      if (action === "copy-task") {
+        const copy = createTaskElement(name, duration);
+        taskListEl.appendChild(copy);
+        checkDoneEmpty();
+        updateStats();
+        saveTasks();
+      }
+
+      if (action === "delete-task") {
+        taskEl.remove();
+        checkDoneEmpty();
+        updateStats();
+        saveTasks();
+      }
+    }
+
+    // 初始加载任务数据
+    loadTasks();
+    loadDailyStats();
+
+    taskListEl.addEventListener("click", (e) => handleTaskClick(taskListEl, e));
+    doneListEl.addEventListener("click", (e) => handleTaskClick(doneListEl, e));
+
+    // 拖拽初始化
+    document.querySelectorAll("#taskList .task, #doneList .task").forEach(attachDrag);
+    setupDropZone(taskListEl);
+    setupDropZone(doneListEl);
+    checkDoneEmpty();
+
+    // 保存任务（新建/编辑）
+    document.getElementById("saveTask").addEventListener("click", () => {
+      const name = document.getElementById("taskName").value.trim() || "新任务";
+      const duration = Math.max(1, Math.min(120, parseInt(document.getElementById("taskDuration").value, 10) || 25));
+
+      if (editingTaskEl) {
+        editingTaskEl.setAttribute("data-name", name);
+        editingTaskEl.setAttribute("data-duration", duration.toString());
+        const labelSpan = editingTaskEl.querySelector(".task-actions span");
+        const labelSmall = editingTaskEl.querySelector(".task-actions small");
+        if (labelSpan) labelSpan.textContent = name;
+        if (labelSmall) labelSmall.textContent = `${duration}m`;
+      } else {
+        const row = createTaskElement(name, duration);
+        taskListEl.appendChild(row);
+      }
+
+      closeModal(taskModal);
+      document.getElementById("taskName").value = "";
+      document.getElementById("taskDuration").value = "25";
+      editingTaskEl = null;
+      updateStats();
+      saveTasks();
+    });
+
+    // 结束按钮：停止当前番茄并清空队列
+    document.getElementById("endBtn").addEventListener("click", () => {
+      endFlow();
+    });
+
+    // 跳过：专注时跳到休息，休息时跳到下一段专注或结束
+    document.getElementById("skipBtn").addEventListener("click", () => {
+      const wasRunning = isRunning;
+      pauseTimer();
+      if (phase === "focus") {
+        startBreak();
+      } else {
+        if (segmentQueue.length > 0) {
+          startNextSegment();
+        } else {
+          endFlow();
+        }
+      }
+      if (wasRunning) startTimer();
+    });
+
+    updateStats();
+    updateUI();
+
+    startLiveBtn.addEventListener("click", openLiveModal);
+    stopLiveBtn.addEventListener("click", stopLive);
+    refreshLiveBtn.addEventListener("click", refreshLiveList);
+    document.getElementById("cancelLive").addEventListener("click", () => {
+      closeLiveModal();
+      clearPreview();
+    });
+    document.getElementById("confirmLive").addEventListener("click", startLive);
+    document.getElementById("pickScreen").addEventListener("click", () => requestStream("screen"));
+    document.getElementById("pickCamera").addEventListener("click", () => requestStream("camera"));
+    document.getElementById("closeWatch").addEventListener("click", closeWatchModal);
+
+    document.getElementById("liveGrid").addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
+      const streamName = target.dataset.watch;
+      if (streamName) watchStream(streamName);
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.11"></script>
+</body>
+</html>
